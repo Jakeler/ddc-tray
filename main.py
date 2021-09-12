@@ -31,13 +31,15 @@ def toggle():
         window.hide()
   
 # Adding an icon
-icon = QIcon("icon.png")
+icon = QIcon("icons/custom_tray.png")
   
 # Adding item on the menu bar
 tray = QSystemTrayIcon()
 tray.setIcon(icon)
 tray.setVisible(True)
 tray.activated.connect(toggle)
+
+window.setWindowIcon(icon)
   
 # Creating the options
 menu = QMenu('Menu')
