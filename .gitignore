@@ -1,2 +1,7 @@
 venv/
 *.pyc
+
+# exclude generated c bindings
+*.c
+*.o
+*.so
