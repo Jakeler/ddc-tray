@@ -24,7 +24,7 @@ class DDC_Interface(ABC):
         max: int
 
     class VCP(Enum):
-        BRIGHTNESS = auto()
+        BRIGHTNESS = 0x10
 
     @abstractmethod
     def get_monitors() -> list[Monitor]:

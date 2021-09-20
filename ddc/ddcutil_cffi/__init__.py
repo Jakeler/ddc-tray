@@ -1,6 +1,7 @@
 import time
 from ._ddc_cffi import ffi, lib
-from ..interface import DDC_Interface as DDCi
+from ..interface import DDC_Interface as DDCi, DisplayCon
+from contextlib import contextmanager
 
 class DDC(DDCi):
     def get_monitors(self):
@@ -12,29 +13,31 @@ class DDC(DDCi):
         # de ref with [0] instead of *
         monitor_count = x[0].ct
         # no builtin iteration for further array deref, use generator/comprehension
-        return (x[0].info[i] for i in range(monitor_count))
+        monitors = x[0].info
+        return (DDC.Monitor(
+            display_idx=monitors[i].dispno,
+            display_ref=monitors[i].dref,
+            model=ffi.string(monitors[i].model_name).decode(),
+            manufacturer=ffi.string(monitors[i].mfg_id).decode(),
+            vcp_ver=f'{monitors[i].vcp_version.major}.{monitors[i].vcp_version.minor}'
+        ) for i in range(monitor_count))
 
+    @contextmanager
     def open_monitor(self, mon: DDCi.Monitor):
-        pass
-
-    def read_vcp(self, monitors):
-        for mon in monitors:
-            mfg = ffi.string(mon.mfg_id)
-            model = ffi.string(mon.model_name)
-            print(f'{mon.dispno}: [{mfg.decode()}] {model.decode()}')
-
-            display_ref = mon.dref
-            display_handle = ffi.new('DDCA_Display_Handle *')
-            ret = lib.ddca_open_display2(display_ref, True, display_handle)
-
-            vcp_val = ffi.new('DDCA_Any_Vcp_Value **')
-            lib.ddca_get_any_vcp_value_using_explicit_type(display_handle[0], 0x10, 
-                lib.DDCA_NON_TABLE_VCP_VALUE, vcp_val)
-            print('Current', vcp_val[0].val.c_nc.sl)
-            print('Max', vcp_val[0].val.c_nc.ml)
-
+        display_handle = ffi.new('DDCA_Display_Handle *')
+        ret = lib.ddca_open_display2(mon.display_ref, True, display_handle)
+        try:
+            yield display_handle[0]
+        finally:
             ret = lib.ddca_close_display(display_handle[0])
-            print(ret)
+
+    def read_vcp(self, con: DisplayCon, code: int):
+        vcp_val = ffi.new('DDCA_Any_Vcp_Value **')
+        lib.ddca_get_any_vcp_value_using_explicit_type(con, code, 
+            lib.DDCA_NON_TABLE_VCP_VALUE, vcp_val)
+
+        print('Current', vcp_val[0].val.c_nc.sl)
+        print('Max', vcp_val[0].val.c_nc.ml)
 
     # lib.ddca_free_display_info_list(x[0])
 
