@@ -43,11 +43,17 @@ class DDC(DDCi):
         )
 
     def write_vcp(self, con: DisplayCon, code: int, value: int):
-        vcp_val = ffi.new('DDCA_Any_Vcp_Value *')
-        vcp_val.opcode = code
-        vcp_val.value_type = lib.DDCA_NON_TABLE_VCP_VALUE
-        vcp_val.val.c_nc.sl = value # TODO: fill high byte with for val > 255
+        vcp_val = ffi.new('DDCA_Any_Vcp_Value *', {
+            'opcode': code,
+            'value_type': lib.DDCA_NON_TABLE_VCP_VALUE,
+            'val': {
+                'c_nc': {
+                    'sl': (value) & 0xff,
+                    'sh': (value >> 8) & 0xff
+                }
+            }
+        })
         ret = lib.ddca_set_any_vcp_value(con, code, vcp_val)
-        print(ret)
+        print('write ret', ret)
 
 # lib.ddca_free_display_info_list(x[0])
