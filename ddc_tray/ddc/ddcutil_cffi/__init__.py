@@ -1,6 +1,6 @@
 import time
 from ._ddc_cffi import ffi, lib
-from ..interface import DDC_Interface as DDCi, DisplayCon
+from ddc_tray.ddc.interface import DDC_Interface as DDCi, DisplayCon
 from contextlib import contextmanager
 
 class DDC(DDCi):

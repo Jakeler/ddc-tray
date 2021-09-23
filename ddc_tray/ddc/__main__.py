@@ -1,4 +1,4 @@
-from . import DDC
+from ddc_tray.ddc.ddcutil_cffi import DDC
 print('MAIN')
 
 ddc = DDC()

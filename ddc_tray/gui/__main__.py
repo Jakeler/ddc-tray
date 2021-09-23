@@ -1,6 +1,7 @@
 from PyQt5.QtGui import * 
 from PyQt5.QtWidgets import * 
 
+import os
 import signal
 # Fix Ctrl-C, otherwise nothing happens
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -29,17 +30,19 @@ def toggle():
         window.show()
     else:
         window.hide()
-  
+
+
 # Adding an icon
-icon = QIcon("icons/custom_tray.png")
+base_path = os.path.dirname(__file__)
+icon = QIcon(f"{base_path}/icons/custom_tray.png")
   
 # Adding item on the menu bar
-tray = QSystemTrayIcon()
+tray = QSystemTrayIcon(icon=icon)
 tray.setIcon(icon)
 tray.setVisible(True)
 tray.activated.connect(toggle)
 
-window.setWindowIcon(icon)
+# window.setWindowIcon(icon)
   
 # Creating the options
 menu = QMenu('Menu')
