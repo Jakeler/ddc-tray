@@ -6,23 +6,24 @@ from enum import Enum, auto
 DisplayRef = TypeVar('display reference') # opaque data/pointer
 DisplayCon = TypeVar('open display connection') # opaque data/pointer
 
+@dataclass
+class Monitor:
+    display_idx: int
+    display_ref: DisplayRef
+    model: str
+    manufacturer: str
+    vcp_ver: str
+
+    def __str__(self):
+        return f'{self.display_idx}: [{self.manufacturer}] {self.model}'
+
+@dataclass
+class VCP_result:
+    value: int
+    max: int
+
+
 class DDC_Interface(ABC):
-    @dataclass
-    class Monitor:
-        display_idx: int
-        display_ref: DisplayRef
-        model: str
-        manufacturer: str
-        vcp_ver: str
-
-        def __str__(self):
-            return f'{self.display_idx}: [{self.manufacturer}] {self.model}'
-
-    @dataclass
-    class VCP_result:
-        value: int
-        max: int
-
     class VCP(Enum):
         BRIGHTNESS = 0x10
 

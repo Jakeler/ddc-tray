@@ -1,9 +1,9 @@
 import time
 from ._ddc_cffi import ffi, lib
-from ddc_tray.ddc.interface import DDC_Interface as DDCi, DisplayCon
+from ddc_tray.ddc.interface import DDC_Interface, Monitor, VCP_result, DisplayCon
 from contextlib import contextmanager
 
-class DDC(DDCi):
+class DDC(DDC_Interface):
     def get_monitors(self):
         x = ffi.new('DDCA_Display_Info_List **')
         ret = lib.ddca_get_display_info_list2(True, x)
@@ -14,7 +14,7 @@ class DDC(DDCi):
         monitor_count = x[0].ct
         # no builtin iteration for further array deref, use generator/comprehension
         monitors = x[0].info
-        return (self.Monitor(
+        return (Monitor(
             display_idx=monitors[i].dispno,
             display_ref=monitors[i].dref,
             model=ffi.string(monitors[i].model_name).decode(),
@@ -23,7 +23,7 @@ class DDC(DDCi):
         ) for i in range(monitor_count))
 
     @contextmanager
-    def open_monitor(self, mon: DDCi.Monitor):
+    def open_monitor(self, mon: Monitor):
         display_handle = ffi.new('DDCA_Display_Handle *')
         ret = lib.ddca_open_display2(mon.display_ref, True, display_handle)
         try:
@@ -37,7 +37,7 @@ class DDC(DDCi):
             lib.DDCA_NON_TABLE_VCP_VALUE, vcp_val)
 
         data = vcp_val[0].val.c_nc
-        return self.VCP_result(
+        return VCP_result(
             value=data.sh << 8 | data.sl,
             max=data.mh << 8 | data.ml
         )
