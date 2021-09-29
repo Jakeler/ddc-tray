@@ -14,13 +14,15 @@ class DDC(DDC_Interface):
         monitor_count = x[0].ct
         # no builtin iteration for further array deref, use generator/comprehension
         monitors = x[0].info
-        return (Monitor(
+        self.monitors = (Monitor(
             display_idx=monitors[i].dispno,
             display_ref=monitors[i].dref,
             model=ffi.string(monitors[i].model_name).decode(),
             manufacturer=ffi.string(monitors[i].mfg_id).decode(),
             vcp_ver=f'{monitors[i].vcp_version.major}.{monitors[i].vcp_version.minor}'
         ) for i in range(monitor_count))
+
+        return self.monitors
 
     @contextmanager
     def open_monitor(self, mon: Monitor):
