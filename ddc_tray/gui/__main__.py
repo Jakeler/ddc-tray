@@ -1,15 +1,24 @@
 from PyQt5.QtGui import * 
 from PyQt5.QtWidgets import * 
-
-import os
-import signal
+import os, signal
 # Fix Ctrl-C, otherwise nothing happens
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+WINDOW_TITLE = 'DDC Tray Settings'
 
 
 def test():
     print('clicked some')
   
+def toggle():
+    # print(window.isHidden())
+    if window.isHidden():
+        window.show()
+    else:
+        window.hide()
+
+
+
 app = QApplication([])
 app.setQuitOnLastWindowClosed(False)
 
@@ -20,17 +29,10 @@ btn_bottom = QPushButton('Bottom')
 layout.addWidget(btn_top)
 layout.addWidget(btn_bottom)
 window.setLayout(layout)
+window.setWindowTitle(WINDOW_TITLE)
 # window.show()
 
 btn_top.clicked.connect(test)
-
-def toggle():
-    # print(window.isHidden())
-    if window.isHidden():
-        window.show()
-    else:
-        window.hide()
-
 
 # Adding an icon
 base_path = os.path.dirname(__file__)
@@ -42,34 +44,35 @@ tray.setIcon(icon)
 tray.setVisible(True)
 tray.activated.connect(toggle)
 
-# window.setWindowIcon(icon)
+window.setWindowIcon(icon)
   
 # Creating the options
-menu = QMenu('Menu')
-option1 = QAction("SOME")
-option1.triggered.connect(test)
+context_menu = QMenu()
+main_action = QAction("Open Settings")
+main_action.triggered.connect(toggle)
 
-option2 = QAction("others")
-option2.setCheckable(True)
-menu.addAction(option1)
-menu.addAction(option2)
+auto_adj_toggle = QAction("Auto Adjust")
+auto_adj_toggle.setCheckable(True)
 
-submenu = QMenu('Monitor 1')
-submenu.addActions([option1, option2])
-menu.addSeparator()
-menu.addMenu(submenu)
-menu.addSeparator()
+sub_menu = QMenu('Monitor 1')
+# sub_menu.addActions([option1, option2])
 
 # To quit the app
-quit = QAction("Quit")
-quit.triggered.connect(app.quit)
-menu.addAction(quit)
+quit_action = QAction("Quit")
+quit_action.triggered.connect(app.quit)
+
+context_menu.addAction(main_action)
+context_menu.addAction(auto_adj_toggle)
+context_menu.addSeparator()
+context_menu.addMenu(sub_menu)
+context_menu.addSeparator()
+context_menu.addAction(quit_action)
   
 # Adding options to the System Tray
-tray.setContextMenu(menu)
+tray.setContextMenu(context_menu)
 
 def rem_acc():
-    menu.removeAction(option1)
+    context_menu.removeAction(option1)
 btn_bottom.clicked.connect(rem_acc)
   
 app.exec_()
